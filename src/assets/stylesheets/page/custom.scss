@@ -1,0 +1,86 @@
+.cus-border-radio {
+  border-radius: 8px 8px 8px 8px;
+}
+
+.cus-border-pill{
+  border-radius: 50px 50px 50px 50px;
+}
+
+.cus-non-radio {
+  border-radius: 0 0 0 0;
+}
+
+.cus-shadow-border {
+  @include extra-shadow
+}
+
+.cus-dot {
+  width: 9px;
+  height: 9px;
+  border: 2px solid #707070;
+  border-radius: 50px;
+  margin-right: 6px;
+}
+
+.cus-dot-bg-pink{
+  background-color: #DE4B63;
+}
+
+.cus-dot-bg-yellow {
+  background-color: #FAA722;
+}
+
+.cus-dot-bg-green {
+  background-color: #83C51D;
+}
+
+.cus-fs-sm {
+  font-size: 0.75rem;
+}
+
+.btn-gray-dark {
+  color: $dark;
+  background-color: #a8b0b9;
+  border-color: #a8b0b9;
+  box-shadow: 0px 0px 0px $dark;
+}
+
+.btn-gray-dark:hover {
+  color: $dark;
+  background-color: $yellow;
+  border-color: $dark;
+  @include extra-shadow;
+}
+
+.btn-blue-dark {
+  color: #fff;
+  background-color: $primary;
+  border-color: #000;
+  @include extra-shadow;
+}
+
+.btn-blue-dark:hover {
+  color: $dark;
+  background-color: $yellow;
+  border-color: $dark;
+}
+
+.cus-tag-border-radio {
+  border-radius: 8px 8px 0 0;
+}
+
+.cus-disabled-button {
+  background-color: #A8B0B9;
+  border: 2px solid #808080;
+}
+
+.cus-unFollow-btn {
+  background-color: #EFECE7;
+  border-color: #000;
+  @include extra-shadow;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+

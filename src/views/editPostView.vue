@@ -1,15 +1,15 @@
 <template>
   <div class="col-md-7">
     <div class="border border-2 border-dark py-3 position-relative bg-white mb-3">
-      <h3 class="text-center mb-0 fw-bold">張貼動態</h3>
+      <h3 class="text-center mb-0 fw-bold">編輯動態</h3>
       <div
           class="position-absolute border py-3 border-dark border-2 w-100 bg-white"
           style="z-index: -1; top: 4px; left: -6px"
         >
-        <h3 class="text-center mb-0 fw-bold">張貼動態</h3>
+        <h3 class="text-center mb-0 fw-bold">編輯動態</h3>
       </div>
     </div>
-    <form @submit.prevent="addNewPost">
+    <form @submit.prevent="uploadEditPost">
       <div class="card border-2 border-dark cus-border-radio cus-shadow-bottom">
         <div class="card-body p-4">
           <div class="form-group mb-3">
@@ -21,7 +21,7 @@
               fw-bolder"
               rows="5"
               placeholder="輸入您的貼文內容"
-              v-model="data.content"
+              v-model="post.content"
             ></textarea>
           </div>
           <div class="input-group mb-2">
@@ -33,13 +33,12 @@
                 @change="uploadImage"
               />
               上傳圖片
-              <div v-if="isLoading" class="spinner-border spinner-border-sm" role="status"></div>
             </label>
             <button type="button" class="btn btn-outline-secondary" v-if="imgUrl" @click.prevent="imgUrl = ''">
               刪除圖片
             </button>
           </div>
-          <img :src="this.imgUrl" v-if="this.imgUrl"
+          <img :src="imgUrl" v-if="imgUrl"
           class="cus-border-radio img-fluid border border-2 border-dark"
           alt="postImage" style="width:100%">
           <p class="text-warning text-center mt-2 mb-2 fs-7 d-none">
@@ -49,14 +48,12 @@
             圖片格式錯誤，僅限 JPG、PNG 圖片
           </p>
           <div class="d-flex justify-content-center">
-            <button v-if="data.content" type="submit" class="btn btn-blue-dark btn-lg py-3 px-8 mt-5
+            <button v-if="post.content" type="submit" class="btn btn-blue-dark btn-lg py-3 px-8 mt-5
             text-white border-2 border-dark fw-bolder"
-            >送出貼文
-              <div v-if="isLoading" class="spinner-border spinner-border-sm" role="status"></div>
-            </button>
+            >儲存貼文</button>
             <button v-else disabled type="submit" class="btn btn-gray-dark btn-lg py-3 px-8 mt-5
             text-dark border-2 border-dark fw-bolder"
-            >送出貼文</button>
+            >儲存貼文</button>
           </div>
         </div>
       </div>
@@ -70,53 +67,52 @@ import emitter from '@/libs/emitter.js'
 export default {
   data () {
     return {
-      isLoading: false,
       fileInput: null,
       url: process.env.VUE_APP_API,
       imgUrl: '',
-      data: {
-        content: '',
-        type: 'group',
-        image: ''
-      }
+      post: {}
     }
   },
   methods: {
-    addNewPost () {
-      this.isLoading = true
-      if (this.data.content === '') {
+    getEditPost () {
+      const { id } = this.$route.params
+      this.$http.get(`${this.url}/posts/${id}`)
+        .then(res => {
+          this.post = res.data.data
+          this.imgUrl = this.post.image
+        })
+    },
+    uploadEditPost () {
+      if (this.post.content === '') {
         const info = {
           icon: 'warning',
           title: '請輸入貼文內容'
         }
         emitter.emit('popToast', info)
-        this.isLoading = false
       } else {
-        if (this.imgUrl !== '') {
-          this.data.image = this.imgUrl
+        const editedPost = {
+          content: this.post.content,
+          image: this.imgUrl
         }
-        this.$http.post(`${this.url}/posts`, this.data)
+        this.$http.patch(`${this.url}/posts/${this.post._id}`, editedPost)
           .then(() => {
             const info = ({
               icon: 'success',
-              title: '已新增貼文'
+              title: '已編輯貼文'
             })
             emitter.emit('popToast', info)
-            this.isLoading = false
             this.$router.push('/postWall')
           })
           .catch(() => {
             const info = {
               icon: 'error',
-              title: '貼文上傳失敗'
+              title: '貼文編輯失敗'
             }
             emitter.emit('popToast', info)
-            this.isLoading = false
           })
       }
     },
     uploadImage () {
-      this.isLoading = true
       const file = this.fileInput.files[0]
       if (!file) {
         const info = {
@@ -124,7 +120,6 @@ export default {
           title: '未選擇圖片檔案'
         }
         emitter.emit('popToast', info)
-        this.isLoading = false
         return
       }
       if (file.type !== 'image/jpeg' && file.type !== 'image/png' &&
@@ -134,7 +129,6 @@ export default {
           title: '檔案類別僅限 jpg, jpeg, png 或 gif'
         }
         emitter.emit('popToast', info)
-        this.isLoading = false
         return
       }
       if (file.size > 2 * 1024 * 1024) {
@@ -143,7 +137,6 @@ export default {
           title: '上傳檔案須小於 2 MB'
         }
         emitter.emit('popToast', info)
-        this.isLoading = false
         return
       }
       const formData = new FormData()
@@ -151,7 +144,6 @@ export default {
       this.$http.post(`${this.url}/upload`, formData)
         .then(res => {
           this.imgUrl = res.data.imgUrl
-          this.isLoading = false
         })
         .catch((err) => {
           const info = {
@@ -159,12 +151,12 @@ export default {
             title: err.response.data.message
           }
           emitter.emit('popToast', info)
-          this.isLoading = false
         })
     }
   },
   mounted () {
     this.fileInput = this.$refs.upload_img
+    this.getEditPost()
   }
 }
 </script>

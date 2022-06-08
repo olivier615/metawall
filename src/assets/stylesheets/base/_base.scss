@@ -18,19 +18,6 @@ a{
   padding-left: 10rem;
 }
 
-.cus-border-radio{
-  border-radius: 8px 8px 8px 8px;
-}
-
-.cus-shadow-border{
-  @include extra-shadow
-}
-
-.cus-shadow-bottom{
-  box-shadow: 0px 3px 0px #000;
-}
-
-
 .icon-border-box{
   width: 50px;
   height: 50px;
@@ -41,57 +28,6 @@ a{
 
 .no-border-radius{
   border-radius:0;
-}
-
-.cus-dot{
-  width: 9px;
-  height: 9px;
-  border: 2px solid #707070;
-  border-radius: 50px;
-  margin-right: 6px;
-}
-
-.cus-dot-bg-pink{
-  background-color: #DE4B63;
-}
-
-.cus-dot-bg-yellow{
-  background-color: #FAA722;
-}
-
-.cus-dot-bg-green{
-  background-color: #83C51D;
-}
-
-.cus-fs-sm{
-  font-size: 0.75rem;
-}
-
-.btn-gray-dark {
-  color: $dark;
-  background-color: #a8b0b9;
-  border-color: #a8b0b9;
-  box-shadow: 0px 0px 0px $dark;
-}
-
-.btn-gray-dark:hover {
-  color: $dark;
-  background-color: $yellow;
-  border-color: $dark;
-  @include extra-shadow;
-}
-
-.btn-blue-dark {
-  color: #fff;
-  background-color: $primary;
-  border-color: #000;
-  @include extra-shadow;
-}
-
-.btn-blue-dark:hover {
-  color: $dark;
-  background-color: $yellow;
-  border-color: $dark;
 }
 
 .link-hover{
@@ -120,4 +56,16 @@ a{
   color:$primary;
   text-decoration: underline;
   @include duration-time;
+}
+
+.sign_in_block{
+  height: 100vh;
+  h1{
+    font-size: 60px;
+    letter-spacing: 2px;
+  }
+}
+
+.link-pointer{
+  cursor: pointer;
 }

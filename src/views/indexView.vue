@@ -1,70 +1,11 @@
 <template>
-  <headerView class="mb-6" />
-  <section>
+  <headerView class="mb-6" :user-data="userData" />
+    <section>
     <div class="container px-lg">
       <div class="row">
-        <div class="col-md-7">
-          <div class="row">
-            <div class="col-md-4">
-              <select name="timeSort" class="py-2 form-select no-border-radius border-2 border-dark
-              text-dark" v-model="postsTomeSort">
-                <option selected value="最新貼文">最新貼文</option>
-                <option value="由舊到新">由舊到新</option>
-              </select>
-            </div>
-            <div class="col-md-8">
-              <div class="input-group mb-3">
-                <input type="text" v-model="q"
-                class="py-2 form-control no-border-radius border-2 border-dark"
-                placeholder="搜尋貼文">
-                <button class="btn btn-primary no-border-radius border-2 border-dark" type="button"
-                id="button-addon2" @click.prevent="searchPosts">
-                  <span class="bi bi-search fs-6"></span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <ul v-if="posts.length === 0">
-            <li class="mb-3">
-              <div class="card border-2 border-dark cus-border-radio cus-shadow-bottom">
-                <div class="px-3 py-2 border-bottom border-2 border-dark">
-                  <div class="d-flex my-1">
-                    <div class="cus-dot cus-dot-bg-pink"></div>
-                    <div class="cus-dot cus-dot-bg-yellow"></div>
-                    <div class="cus-dot cus-dot-bg-green"></div>
-                  </div>
-                </div>
-                <div class="card-body p-4">
-                  <div class="d-flex align-items-center justify-content-center">
-                      <p class="card-title text-secondary">目前尚無動態，新增一則貼文吧！</p>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-          <ul v-else>
-            <li class="mb-3" v-for="post in posts" :key="post._id">
-              <div class="card border-2 border-dark cus-border-radio cus-shadow-bottom">
-                <div class="card-body p-4">
-                  <div class="d-flex mb-3">
-                    <img :src="post.user.photo" alt="userAvatar" class="img-fluid"
-                    style="height: 50px; width: 50px;">
-                    <div class="ms-3 d-flex flex-column">
-                      <a href="#" class="card-title mb-0 fw-bold name-link">{{ post.user.name }}</a>
-                      <span class="cus-fs-sm text-secondary">{{ new Date(post.createdAt).toLocaleString() }}</span>
-                    </div>
-                  </div>
-                  <p class="card-text fw-bold">{{ post.content }}</p>
-                  <img v-if="post.image" :src="post.image"
-                  class="cus-border-radio img-fluid border border-2 border-dark" alt="postImage"
-                  style="width:100%">
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
+        <router-view v-if="isLogin" />
         <div class="col-md-5">
-          <sideView />
+          <sideView :user-data="userData" />
         </div>
       </div>
     </div>
@@ -74,6 +15,8 @@
 <script>
 import headerView from '@/components/headerView.vue'
 import sideView from '@/components/sideView.vue'
+import emitter from '@/libs/emitter.js'
+
 export default {
   components: {
     headerView,
@@ -81,33 +24,60 @@ export default {
   },
   data () {
     return {
-      url: 'https://whispering-stream-46911.herokuapp.com/api/posts',
-      posts: [],
-      postsTomeSort: '最新貼文',
-      q: ''
+      url: process.env.VUE_APP_API,
+      isLogin: false,
+      token: document.cookie.replace(/(?:(?:^|.*;\s*)MetaWall\s*\=\s*([^;]*).*$)|^.*$/, '$1'), // eslint-disable-line
+      userData: {}
     }
   },
   methods: {
-    getPosts () {
-      this.$http.get(this.url)
-        .then(res => {
-          this.posts = res.data.data
-        }
-        )
-        .catch(() => {
-          console.log('連線失敗')
-        })
+    checkSignIn () {
+      this.takeAuthorization()
+      if (this.token) {
+        this.$http.get(`${this.url}/users`)
+          .then(res => {
+            this.isLogin = true
+            this.$router.push('/postWall')
+          })
+          .catch(err => {
+            this.isLogin = false
+            const info = {
+              icon: 'error',
+              title: err.response.data.message
+            }
+            emitter.emit('popToast', info)
+            this.$router.push('/login/sign_in')
+          })
+      }
     },
-    searchPosts () {
-      const timeSort = this.postsTomeSort === '由舊到新' ? '&timeSort=asc' : ''
-      this.$http.get(`${this.url}?q=${this.q}${timeSort}`)
+    takeAuthorization () {
+      this.$http.defaults.headers.common['Authorization'] = `Bearer ${this.token}` // eslint-disable-line
+    },
+    getUserProfile () {
+      this.$http.get(`${this.url}/users/profile`)
         .then(res => {
-          this.posts = res.data.data
+          this.userData = res.data.data
+          localStorage.setItem('userData', JSON.stringify(this.userData))
+        })
+        .catch(() => {
+          const info = {
+            icon: 'error',
+            title: '無法取得使用者資料，請刷新網頁或重新登入'
+          }
+          emitter.emit('popToast', info)
+          this.$router.push('/login/sign_in')
         })
     }
   },
+  provide () {
+    return {
+      token: `Bearer ${this.token}`,
+      authorization: this.takeAuthorization()
+    }
+  },
   mounted () {
-    this.getPosts()
+    this.checkSignIn()
+    this.getUserProfile()
   }
 }
 </script>
