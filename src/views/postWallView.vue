@@ -94,7 +94,7 @@
               <span v-else>{{ post.likes.length }}</span>
             </div>
             <div class="d-flex mb-2">
-              <img :src="post.user.photo" alt="userAvatar" class="me-2 img-fluid border border-dark border-3 rounded-circle"
+              <img :src="userData.photo" alt="userAvatar" class="me-2 img-fluid border border-dark border-3 rounded-circle"
               style="height: 40px; width: 40px;">
               <div class="mb-2 w-100">
                 <div class="input-group mb-1">
